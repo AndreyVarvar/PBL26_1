@@ -60,7 +60,7 @@ def generate_random_campus_paths(buildings_count: int = 20) -> list[tuple[str, s
     for i in range(len(buildings) - 1):
         distance = random.randint(50, 300)
         paths.append((buildings[i], buildings[i+1], distance))
-    
+
     for i in range(buildings_count // 3):
         building1 = random.choice(buildings)
         building2 = random.choice(buildings)
@@ -68,7 +68,7 @@ def generate_random_campus_paths(buildings_count: int = 20) -> list[tuple[str, s
         if building1 != building2:
             distance = random.randint(80, 400)
             paths.append((building1, building2, distance))
-    
+
     return paths
 
 def sketch_graph(name: str, graph: dict[str, dict[str, int]]) -> None:
@@ -103,12 +103,21 @@ def get_all_paths_BFS(graph: dict[str, dict[str, int]], start: str, end: str) ->
 
     return paths
 
+def find_average_distance_between_vertices(graph: dict[str, dict[str, int]]) -> float:
+    number_of_vertices = len(graph.keys())
+
+    return sum([sum(edges.values()) for edges in graph.values()])/(2*number_of_vertices) # we multiply by 2 because we count every edge twice
 
 def main():
     paths = generate_random_campus_paths()
-    print(paths)
+    # Debug info
+    # print(paths)
     graph = build_graph(paths)
     sketch_graph("campus", graph)
+
+    average_distance = find_average_distance_between_vertices(graph)
+    print(f"The average distance between adjacent buildings is: {average_distance}")
+
 
     start = random.choice(paths)[0]
     end = random.choice(paths)[1]
@@ -131,4 +140,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
