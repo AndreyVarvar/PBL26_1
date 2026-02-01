@@ -29,7 +29,7 @@ def find_path_BFS(graph: dict[str, dict[str, int]], start: str, end: str) -> lis
             return path
 
         for neighbor, _ in graph[current_node].items():
-            if neighbor not in visited:  
+            if neighbor not in visited:
                 visited.update({neighbor})
                 new_path = path + [neighbor]
                 trails.append((neighbor, new_path))
@@ -108,6 +108,28 @@ def find_average_distance_between_vertices(graph: dict[str, dict[str, int]]) -> 
 
     return sum([sum(edges.values()) for edges in graph.values()])/(2*number_of_vertices) # we multiply by 2 because we count every edge twice
 
+def get_longest_path(graph: dict[str, dict[str, int]], start: str):
+    if start not in graph:
+        return []
+
+    trails = [(start, 0, [start])]
+    longest_path = [start]
+    longest_length = 0 # Boy am I good at this
+
+    while trails:
+        current_node, length, path = trails.pop(0)
+
+        for neighbor, distance in graph[current_node].items():
+            if neighbor not in path:  
+                new_path = path + [neighbor]
+                trails.append((neighbor, length + distance, new_path))
+
+                if len(new_path) > len(longest_path):
+                    longest_path = new_path
+                    longest_length = length + distance
+
+    return longest_path, longest_length
+
 def main():
     paths = generate_random_campus_paths()
     # Debug info
@@ -115,13 +137,16 @@ def main():
     graph = build_graph(paths)
     sketch_graph("campus", graph)
 
-    average_distance = find_average_distance_between_vertices(graph)
-    print(f"The average distance between adjacent buildings is: {average_distance}")
-
-
     start = random.choice(paths)[0]
     end = random.choice(paths)[1]
     print(f"Start: {start}, end: {end}")
+
+    longest_path, length = get_longest_path(graph, start)
+    print(f"The longest path is: {longest_path}")
+    print(f"The longest path is {length} meters.")
+
+    average_distance = find_average_distance_between_vertices(graph)
+    print(f"The average distance between adjacent buildings is: {average_distance}")
 
     path = find_path_BFS(graph, start, end)
     print(f"Obtained path: {path}")
