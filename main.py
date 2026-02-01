@@ -1,6 +1,7 @@
 import random
+import graphviz
 
-def build_graph(connections: list[tuple[str, str, int]]) -> dict[str: list]:  # bidirectional graph
+def build_graph(connections: list[tuple[str, str, int]]) -> dict[str, dict[str, int]]:  # bidirectional graph
     graph = {}
     for node1, node2, cost in connections:
         if node1 not in graph:
@@ -10,11 +11,11 @@ def build_graph(connections: list[tuple[str, str, int]]) -> dict[str: list]:  # 
 
         graph[node1][node2] = cost
         graph[node2][node1] = cost
-    
+
     return graph
 
 
-def find_path_BFS(graph: dict[str: dict[str: int]], start: str, end: str) -> list[str] | None:
+def find_path_BFS(graph: dict[str, dict[str, int]], start: str, end: str) -> list[str] | None:
     if start not in graph or end not in graph:
         return None
 
@@ -32,21 +33,21 @@ def find_path_BFS(graph: dict[str: dict[str: int]], start: str, end: str) -> lis
                 visited.update({neighbor})
                 new_path = path + [neighbor]
                 trails.append((neighbor, new_path))
-    
+
     return None  # no path was found
 
 
-def get_path_distance(graph: dict[str: dict[str: int]], path: list[str]):
+def get_path_distance(graph: dict[str, dict[str, int]], path: list[str]):
     total = 0
     for i in range(len(path)-1):
         current_node = path[i]
         next_node = path[i+1]
         total += graph[current_node][next_node]
-    
+
     return total
 
 
-def generate_random_campus_paths(buildings_count=20):
+def generate_random_campus_paths(buildings_count: int = 20) -> list[tuple[str, str, int]]:
     types_of_buildings = ["Camin", "Facultate", "Biblioteca", "Cantina", "Sala_Sport", "Parc", "Laborator", "Amfiteatru"]
     buildings = []
 
@@ -70,29 +71,64 @@ def generate_random_campus_paths(buildings_count=20):
     
     return paths
 
+def sketch_graph(name: str, graph: dict[str, dict[str, int]]) -> None:
+    plot = graphviz.Graph(name)
+    for node in graph.keys():
+        plot.node(node, node)
+    for node in graph.keys():
+        for connection in graph[node].keys():
+            if f"\t{connection} -- {node} [label={str(graph[node][connection])}]\n" in plot.body:
+                continue
+            plot.edge(node, connection, str(graph[node][connection]))
+    plot.render(filename=None, view=True)
+
+def get_all_paths_BFS(graph: dict[str, dict[str, int]], start: str, end: str) -> list[list[str]]:
+    if start not in graph or end not in graph:
+        return []
+
+    trails = [(start, [start])]  # (node: str, path_to_node: list[str])
+    paths = []
+
+    while trails:
+        current_node, path = trails.pop(0)
+
+        if current_node == end:
+            paths.append(path)
+            continue
+
+        for neighbor, _ in graph[current_node].items():
+            if neighbor not in path:  
+                new_path = path + [neighbor]
+                trails.append((neighbor, new_path))
+
+    return paths
+
 
 def main():
-    paths = [
-        ("Camin_A", "Cantina", 150),
-        ("Cantina", "Facultate_Info", 200),
-        ("Camin_A", "Biblioteca", 300),
-        ("Biblioteca", "Facultate_Info", 100),
-        ("Facultate_Info", "Sala_Sport", 250),
-        ("Cantina", "Sala_Sport", 180)
-    ]
     paths = generate_random_campus_paths()
     print(paths)
-    
     graph = build_graph(paths)
+    sketch_graph("campus", graph)
+
     start = random.choice(paths)[0]
     end = random.choice(paths)[1]
     print(f"Start: {start}, end: {end}")
+
     path = find_path_BFS(graph, start, end)
     print(f"Obtained path: {path}")
 
     if path is not None:
         print(f"Distance to destination: {get_path_distance(graph, path)}")
 
+    paths = get_all_paths_BFS(graph, start, end)
+
+    if len(paths):
+        print("All possible paths:")
+        for path in paths:
+            print(path, end="\n")
+    else:
+        print("No paths found D:")
 
 if __name__ == "__main__":
     main()
+    
