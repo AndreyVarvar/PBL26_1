@@ -1,0 +1,7 @@
+# Dependencies:
+```bash
+pip install graphviz
+```
+Don't forget to download the executables from:
+https://www.graphviz.org/download/
+
