@@ -130,6 +130,19 @@ def get_longest_path(graph: dict[str, dict[str, int]], start: str):
 
     return longest_path, longest_length
 
+def get_reachable_from_camin_a(graph: dict[str: dict[str: int]], start_node: str):
+    reachable = set()
+    step_1_neighbors = graph.get(start_node)
+    for neighbor in step_1_neighbors:
+        if neighbor != start_node:
+            reachable.add(neighbor)
+            step_2_neighbors = graph.get(neighbor)
+            for next_neighbor in step_2_neighbors:
+                if next_neighbor != start_node:
+                    reachable.add(next_neighbor)
+
+    return list(reachable)
+
 def main():
     paths = generate_random_campus_paths()
     # Debug info
