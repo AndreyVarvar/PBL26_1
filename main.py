@@ -49,11 +49,11 @@ def get_path_distance(graph: dict[str, dict[str, int]], path: list[str]):
 
 def generate_random_campus_paths(buildings_count: int = 20) -> list[tuple[str, str, int]]:
     types_of_buildings = ["Camin", "Facultate", "Biblioteca", "Cantina", "Sala_Sport", "Parc", "Laborator", "Amfiteatru"]
-    buildings = []
+    buildings = ["Camin_A"]
 
     for i in range(buildings_count):
         building_type = random.choice(types_of_buildings)
-        buildings.append(f"{building_type}_{chr(65+i)}")
+        buildings.append(f"{building_type}_{chr(66+i)}")
 
     paths = []
 
@@ -97,7 +97,7 @@ def get_all_paths_BFS(graph: dict[str, dict[str, int]], start: str, end: str) ->
             continue
 
         for neighbor, _ in graph[current_node].items():
-            if neighbor not in path:  
+            if neighbor not in path:
                 new_path = path + [neighbor]
                 trails.append((neighbor, new_path))
 
@@ -120,7 +120,7 @@ def get_longest_path(graph: dict[str, dict[str, int]], start: str):
         current_node, length, path = trails.pop(0)
 
         for neighbor, distance in graph[current_node].items():
-            if neighbor not in path:  
+            if neighbor not in path:
                 new_path = path + [neighbor]
                 trails.append((neighbor, length + distance, new_path))
 
@@ -175,6 +175,11 @@ def main():
             print(path, end="\n")
     else:
         print("No paths found D:")
+
+
+
+    print("The locations from Camin_A at the max of 2 distances:")
+    print(get_reachable_from_camin_a(graph,"Camin_A"))
 
 if __name__ == "__main__":
     main()
