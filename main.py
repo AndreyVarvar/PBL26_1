@@ -36,6 +36,25 @@ def find_path_BFS(graph: dict[str, dict[str, int]], start: str, end: str) -> lis
 
     return None  # no path was found
 
+def find_central_building(graph: dict[str, dict[str, int]]) -> str:
+    current_min_longest_path = float("inf")
+
+    for start_building in graph:
+        max_path = 0
+        for end_building in graph: # find the longest path
+            path = find_path_BFS(graph, start_building, end_building)
+            if path is None: # no path - skip
+                continue
+            distance = len(path) - 1
+            max_path = max(max_path, distance)
+
+        # the building is central if its longest path is the smallest
+        if max_path < current_min_longest_path: 
+            central_building = start_building
+            current_min_longest_path = max_path
+
+    return central_building 
+        
 
 def get_path_distance(graph: dict[str, dict[str, int]], path: list[str]):
     total = 0
@@ -180,6 +199,9 @@ def main():
 
     print("The locations from Camin_A at the max of 2 distances:")
     print(get_reachable_from_camin_a(graph,"Camin_A"))
+
+    central_building = find_central_building(graph)
+    print(f"The central building in the campus is: {central_building}")
 
 if __name__ == "__main__":
     main()
