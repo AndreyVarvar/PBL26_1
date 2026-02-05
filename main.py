@@ -1,5 +1,6 @@
 import random
 import graphviz
+from colorama import init, Fore
 
 def build_graph(connections: list[tuple[str, str, int]]) -> dict[str, dict[str, int]]:  # bidirectional graph
     graph = {}
@@ -72,7 +73,7 @@ def generate_random_campus_paths(buildings_count: int = 20) -> list[tuple[str, s
 
     for i in range(buildings_count):
         building_type = random.choice(types_of_buildings)
-        buildings.append(f"{building_type}_{chr(66+i)}")
+        buildings.append(f"{building_type}_{chr(67+i)}")  # GET OUT OF MY HEAD GET OUT OF MY HEAD GET OUT OF MY HEAD GET OUT OF MY HEAD
 
     paths = []
 
@@ -88,7 +89,7 @@ def generate_random_campus_paths(buildings_count: int = 20) -> list[tuple[str, s
             distance = random.randint(80, 400)
             paths.append((building1, building2, distance))
 
-    return paths
+    return paths, buildings
 
 def sketch_graph(name: str, graph: dict[str, dict[str, int]]) -> None:
     plot = graphviz.Graph(name)
@@ -162,46 +163,112 @@ def get_reachable_from_camin_a(graph: dict[str: dict[str: int]], start_node: str
 
     return list(reachable)
 
+def format_path(path: list[str]) -> str:
+    formatted = ""
+    for building in path:
+        formatted += building
+
+        if building != path[-1]:
+            formatted += " → "
+    
+    return formatted
+
+
 def main():
-    paths = generate_random_campus_paths()
-    # Debug info
-    # print(paths)
+    paths, buildings = generate_random_campus_paths()
     graph = build_graph(paths)
-    sketch_graph("campus", graph)
 
     start = random.choice(paths)[0]
-    end = random.choice(paths)[1]
-    print(f"Start: {start}, end: {end}")
-
-    longest_path, length = get_longest_path(graph, start)
-    print(f"The longest path is: {longest_path}")
-    print(f"The longest path is {length} meters.")
-
-    average_distance = find_average_distance_between_vertices(graph)
-    print(f"The average distance between adjacent buildings is: {average_distance}")
-
-    path = find_path_BFS(graph, start, end)
-    print(f"Obtained path: {path}")
-
-    if path is not None:
-        print(f"Distance to destination: {get_path_distance(graph, path)}")
-
-    paths = get_all_paths_BFS(graph, start, end)
-
-    if len(paths):
-        print("All possible paths:")
-        for path in paths:
-            print(path, end="\n")
-    else:
-        print("No paths found D:")
+    end = random.choice(paths)[1]  # chance of getting start = end is VERY low (but not 0)
 
 
+    options = [
+        "help -- print this menu",
+        "path -- display path between `start` and `end`",
+        "graph -- visualize the graph (in a PDF file)",
+        "longest_path -- display the longest path from `start`",
+        "average_distance -- display average distance between adjacent buildings",
+        "all_paths -- display all possible paths from `start` to `end`",
+        "dist_2 -- display all buildings reachable in 2 steps from `start`",
+        "central_building -- display the central building",
+        "change_points -- change the initial position and destination buildings",
+        "quit -- quit the program"
+    ]
 
-    print("The locations from Camin_A at the max of 2 distances:")
-    print(get_reachable_from_camin_a(graph,"Camin_A"))
+    user_option = ""
+    while user_option != "quit":
+        user_option = input("Enter command (enter `help` to list all possible commands): ")
 
-    central_building = find_central_building(graph)
-    print(f"The central building in the campus is: {central_building}")
+        if user_option == "quit":
+            break
+
+        elif user_option == "help":
+            print("Here are all the options:")
+            for i, option in enumerate(options):
+                option = option.replace("start", f"{Fore.RED}{start}{Fore.WHITE}")
+                option = option.replace("end", f"{Fore.RED}{end}{Fore.WHITE}")
+                print(f"  {i+1}) {option}")
+
+        elif user_option == "path":
+            path = find_path_BFS(graph, start, end)
+            print(f"{Fore.LIGHTBLUE_EX}Path from {Fore.RED}{start} {Fore.LIGHTBLUE_EX}to {Fore.RED}{end} {Fore.LIGHTBLUE_EX}is: {Fore.WHITE}{format_path(path)}")
+            if path is not None:
+                distance = get_path_distance(graph, path)
+                print(f"{Fore.LIGHTCYAN_EX}Distance to destination is {Fore.GREEN}{distance} meters")
+
+        elif user_option == "graph":
+            sketch_graph("campus", graph)
+
+        elif user_option == "longest_path":
+            longest_path, length = get_longest_path(graph, start)
+            print(f"{Fore.LIGHTCYAN_EX}The longest path starting at {Fore.RED}{start} {Fore.LIGHTCYAN_EX}is: {Fore.WHITE}{format_path(longest_path)}")
+            print(f"{Fore.BLUE}Its length is {Fore.GREEN}{length} meters{Fore.WHITE}.")
+
+        elif user_option == "average_distance":
+            average_distance = find_average_distance_between_vertices(graph)
+            print(f"The average distance between adjacent buildings is {Fore.GREEN}{average_distance:0.3f} meters")
+
+        elif user_option == "all_paths":
+            paths = get_all_paths_BFS(graph, start, end)
+            if len(paths):
+                print(f"{Fore.BLUE}All possible paths ({Fore.GREEN}{len(paths)} {Fore.BLUE}total):")
+                for i, path in enumerate(paths):
+                    print(f"{Fore.GREEN}{i+1}) {Fore.WHITE}{format_path(path)}", end="\n")
+            else:
+                print(f"{Fore.RED}No paths found D:")
+        
+        elif user_option == "dist_2":
+            print(f"{Fore.LIGHTCYAN_EX}Destinations reachable from {Fore.YELLOW}Camin_A {Fore.LIGHTCYAN_EX}in {Fore.GREEN}2 {Fore.LIGHTCYAN_EX}steps are:")
+            reachable_by_2_steps = get_reachable_from_camin_a(graph, "Camin_A")
+            print(", ".join(reachable_by_2_steps))
+
+        elif user_option == "central_building":
+            central_building = find_central_building(graph)
+            print(f"{Fore.BLUE}The central building in the campus is: {Fore.MAGENTA}{central_building}")
+        
+        elif user_option == "change_points":
+            print("Available buildings: " + ", ".join(buildings))
+            new_start = ""
+            while new_start not in buildings:
+                new_start = input("Choose one of the starting buildings (type its name): ")
+                if new_start not in buildings:
+                    print("Invalid choice.")
+
+            new_end = ""
+            while new_end not in buildings:
+                new_end = input("Choose one of the destination buildings (type its name): ")
+                if new_end not in buildings:
+                    print("Invalid choice.")
+                
+            start = new_start
+            end = new_end
+
+        else:
+            print(f"{Fore.RED}Invalid option.")
+        
+        print()            
+
 
 if __name__ == "__main__":
+    init(autoreset=True)
     main()
